@@ -1,0 +1,3 @@
+[submodule "submodules/vueties"]
+	path = submodules/vueties
+	url = git@github.com:xtiandiaz/vueties.git
