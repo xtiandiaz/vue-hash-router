@@ -28,9 +28,6 @@ const currentTitle = ref<string>()
 </template>
 
 <style scoped lang="scss">
-$transition-duration: 0.25s;
-$transition-timing-function: ease-in;
-
 @mixin transition($timing-function, $duration: 0.25s) {
   transition: none $duration $timing-function;
   

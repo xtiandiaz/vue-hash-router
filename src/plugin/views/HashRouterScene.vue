@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
-import { HashRoutePresentationStyle, type HashRouter } from '../models'
+import { inject } from 'vue'
+import { type HashRouter } from '../models'
 import HashRouterModalScene from './HashRouterModalScene.vue'
 import type { NavigationBarVM } from '@vueties/view-models'
 import NavigationBar from '@vueties/bars/NavigationBar.vue'
@@ -10,8 +10,6 @@ defineProps<{
 }>()
 
 const hashRouter = inject('hash-router') as HashRouter | undefined
-const currentBaseRoute = computed(() => hashRouter?.currentRoute.value.presentationStyle === undefined ? hashRouter?.currentRoute.value : undefined)
-const currentModalRoute = computed(() => hashRouter?.currentRoute.value.presentationStyle === HashRoutePresentationStyle.Modal ? hashRouter?.currentRoute.value : undefined)
 
 function navigateToRoute(key: string) {
   hashRouter?.pushRoute(key)
@@ -25,10 +23,10 @@ function navigateToRoute(key: string) {
     @route-selected="navigateToRoute"
   />
   
-  <component :is="currentBaseRoute?.view" />
+  <component :is="hashRouter?.baseRoute?.view" />
   
   <HashRouterModalScene 
-    :route="currentModalRoute"
+    :route="hashRouter?.modalRoute"
   />
 </template>
 

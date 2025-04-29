@@ -36,6 +36,16 @@ export class HashRouter {
       this._onHashChanged()
     })
   }
+  
+  get baseRoute(): HashRoute {
+    return this._routes[this._trail.value[0]]
+  }
+  
+  get modalRoute(): HashRoute | undefined {
+    const latestRoute = this._routes[this._trail.value.last()!]
+    
+    return latestRoute.presentationStyle === HashRoutePresentationStyle.Modal ? latestRoute : undefined
+  }
 
   isValidRouteKey(key: string): boolean {
     return this._routes[key] !== undefined
