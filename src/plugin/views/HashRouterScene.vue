@@ -23,10 +23,10 @@ function navigateToRoute(key: string) {
     @route-selected="navigateToRoute"
   />
   
-  <component :is="hashRouter?.baseRoute?.view" />
+  <component :is="hashRouter?.baseRoute?.value.view" />
   
   <HashRouterModalScene 
-    :route="hashRouter?.modalRoute"
+    :route="hashRouter?.modalRoute.value"
   />
 </template>
 

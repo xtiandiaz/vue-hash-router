@@ -9,6 +9,7 @@ export enum HashRoutePresentationStyle {
 export interface HashRoute {
   key: string
   view: Component
+  path?: string
   presentationStyle?: HashRoutePresentationStyle
 }
 
@@ -18,50 +19,67 @@ export interface HashRouterOptions {
 }
 
 export class HashRouter {
-  currentRoute: ComputedRef<HashRoute>
-
-  _trail: Ref<string[]>
+  readonly baseRoute: ComputedRef<HashRoute> = computed(() => {
+    const reversedTrail = this._trail.value.reversed()
+    const routeKey = reversedTrail.find(rk => this._routes[rk].presentationStyle !== HashRoutePresentationStyle.Modal)!
+    
+    return this._routes[routeKey]
+  })
+  
+  readonly modalRoute: ComputedRef<HashRoute | undefined> = computed(() => {
+    const latestRoute = this._latestRoute
+    
+    return latestRoute.presentationStyle === HashRoutePresentationStyle.Modal ? latestRoute : undefined
+  })
+  
+  _homeRouteKey: string
   _routes: Record<string, HashRoute>
+  _trail: Ref<string[]>
 
-  readonly _rootRouteKey: string
-
-  constructor(routes: HashRoute[], rootRouteKey: string) {
+  constructor(routes: HashRoute[], homeRouteKey: string) {
     this._routes = Object.fromEntries(routes.map((r) => [r.key, r]))
-    this._rootRouteKey = rootRouteKey
-    this._trail = ref(this._trailFromHash(location.hash))
-
-    this.currentRoute = computed(() => this._routes[this._trail.value.last()!])
+    
+    if (!this.isValidRouteKey(homeRouteKey)) {
+      throw new Error(`[Hash Router] Invalid Home Route Key: ${homeRouteKey}`)
+    }
+    
+    this._homeRouteKey = homeRouteKey
+    
+    this._trail = ref([this._routeFromHash(location.hash)?.key ?? homeRouteKey])
 
     window.addEventListener('hashchange', () => {
       this._onHashChanged()
     })
   }
   
-  get baseRoute(): HashRoute {
-    return this._routes[this._trail.value[0]]
-  }
-  
-  get modalRoute(): HashRoute | undefined {
-    const latestRoute = this._routes[this._trail.value.last()!]
-    
-    return latestRoute.presentationStyle === HashRoutePresentationStyle.Modal ? latestRoute : undefined
+  get _latestRoute(): HashRoute {
+    return this._routes[this._trail.value.last()!]
   }
 
   isValidRouteKey(key: string): boolean {
     return this._routes[key] !== undefined
   }
+  
+  isValidRoutePath(path: string): boolean {
+    return this._routeFromPath(path) !== undefined
+  }
 
   pushRoute(key: string) {
-    if (this.isValidRouteKey(key)) {
-      this._trail.value.push(key)
+    if (!this.isValidRouteKey(key)) {
+      console.error(`[Hash Router] Invalid key: ${key}`)
+      return
     }
+    
+    this._trail.value.push(key)
+    
     this._applyTrail()
   }
 
   popRoute(): string | undefined {
     const poppedRouteKey = this._trail.value.pop()
+    
     if (this._trail.value.length === 0) {
-      this._trail.value = [this._rootRouteKey]
+      this._trail.value = [this._homeRouteKey]
     }
 
     this._applyTrail()
@@ -70,28 +88,39 @@ export class HashRouter {
   }
 
   setPath(path: string) {
-    this._trail.value = this._trailFromPath(path)
+    const route = this._routeFromPath(path)
+    
+    if (!route) {
+      console.error(`[Hash Router] Invalid path: ${path}`)
+      return
+    }
+    
+    this._trail.value.push(route.key)
+    
     this._applyTrail()
+  }
+  
+  _routePathFromKey(key: string): string {
+    return this._routes[key].path ?? `/${key}`
+  }
+  
+  _routeFromPath(path: string): HashRoute | undefined {
+    return Object.values(this._routes).find(r => this._routePathFromKey(r.key) === path)
+  }
+  
+  _routeFromHash(hash: string): HashRoute | undefined {
+    return this._routeFromPath(hash.slice(1))
   }
 
   _applyTrail() {
-    location.hash = `#${this._trail.value.join('/')}`
-  }
-
-  _trailFromHash(hash: string): string[] {
-    return this._trailFromPath(hash.slice(1))
-  }
-
-  _trailFromPath(path: string): string[] {
-    const rawKeys = path.split('/')
-    // console.log('rawKeys:', rawKeys)
-    const routeKeys = rawKeys.filter((rk) => (this.isValidRouteKey(rk) ? rk : undefined))
-    // console.log('routeKeys:', routeKeys)
-
-    return routeKeys.length > 0 ? routeKeys : [this._rootRouteKey]
+    location.hash = `#${this._routePathFromKey(this._latestRoute.key)}`
   }
 
   _onHashChanged() {
-    this._trail.value = this._trailFromHash(location.hash)
+    const routeFromHash = this._routeFromHash(location.hash)
+    
+    if (routeFromHash && routeFromHash !== this._latestRoute) {
+      this._trail.value.push(routeFromHash.key)
+    }
   }
 }
