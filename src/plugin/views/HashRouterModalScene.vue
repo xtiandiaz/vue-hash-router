@@ -31,10 +31,10 @@ const currentTitle = ref<string>()
 @mixin transition($timing-function, $duration: 0.25s) {
   transition: none $duration $timing-function;
   
-  :deep(.background) {
+  :deep(.modal-background) {
     transition: opacity $duration $timing-function;
   }
-  :deep(.view-wrapper) {
+  :deep(.navigational-view-wrapper) {
     transition: transform $duration $timing-function;
   }
 }
@@ -46,10 +46,10 @@ const currentTitle = ref<string>()
   @include transition(ease-in);
 }
 .v-enter-from, .v-leave-to {
-  :deep(.background) {
+  :deep(.modal-background) {
     opacity: 0;
   }
-  :deep(.view-wrapper) {
+  :deep(.navigational-view-wrapper) {
     transform: translateY(100%);
   }
 }
