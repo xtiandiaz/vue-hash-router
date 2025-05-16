@@ -18,7 +18,7 @@ function navigateToRoute(key: string) {
 </script>
 
 <template>
-  <NavigationalView>
+  <NavigationalView class="base-view">
     <template v-slot:bar>
       <NavigationBar 
         v-if="navigationBarVM.isVisible" 
@@ -35,3 +35,11 @@ function navigateToRoute(key: string) {
     :route="hashRouter?.modalRoute.value"
   />
 </template>
+
+<style scoped lang="scss">
+@use '@vueties/styles/utils';
+
+.base-view {
+  @include utils.safe-area()
+}
+</style>
