@@ -40,6 +40,6 @@ function navigateToRoute(key: string) {
 @use '@vueties/styles/utils';
 
 .base-view {
-  @include utils.safe-area()
+  // @include utils.safe-area()
 }
 </style>
