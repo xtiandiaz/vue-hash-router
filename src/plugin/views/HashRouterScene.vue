@@ -4,6 +4,7 @@ import { type HashRouter } from '../models'
 import HashRouterModalScene from './HashRouterModalScene.vue'
 import type { NavigationBarVM } from '@vueties/view-models'
 import NavigationBar from '@vueties/bars/NavigationBar.vue'
+import NavigationalView from '@vueties/views/NavigationalView.vue'
 
 defineProps<{
   navigationBarVM: NavigationBarVM
@@ -17,18 +18,20 @@ function navigateToRoute(key: string) {
 </script>
 
 <template>
-  <NavigationBar 
-    v-if="navigationBarVM.isVisible" 
-    :vm="navigationBarVM" 
-    @route-selected="navigateToRoute"
-  />
-  
-  <component :is="hashRouter?.baseRoute?.value.view" />
+  <NavigationalView>
+    <template v-slot:bar>
+      <NavigationBar 
+        v-if="navigationBarVM.isVisible" 
+        :vm="navigationBarVM" 
+        @route-selected="navigateToRoute"
+      />
+    </template>
+    <template v-slot:view>
+      <component :is="hashRouter?.baseRoute?.value.view" />
+    </template>
+  </NavigationalView>
   
   <HashRouterModalScene 
     :route="hashRouter?.modalRoute.value"
   />
 </template>
-
-<style scoped lang="scss">
-</style>

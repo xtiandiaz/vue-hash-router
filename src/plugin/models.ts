@@ -45,7 +45,12 @@ export class HashRouter {
     
     this._homeRouteKey = homeRouteKey
     
-    this._trail = ref([this._routeFromHash(location.hash)?.key ?? homeRouteKey])
+    this._trail = ref([homeRouteKey])
+    
+    const currentRouteKeyFromHash = this._routeFromHash(location.hash)?.key
+    if (currentRouteKeyFromHash) {
+      this.pushRoute(currentRouteKeyFromHash)
+    }
 
     window.addEventListener('hashchange', () => {
       this._onHashChanged()
